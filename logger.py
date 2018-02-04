@@ -35,11 +35,20 @@ class Logger(object):
         self.autosave = autosave        # Write to file automatically?
         self.separator = separator      # Separates log entry fields.
         self.log = list()               # The log!
+        self.template = '%s' + self.separator + '%s' + self.separator + \
+                        '%s' + self.separator + '%s\n'
 
     def __iadd__(self, other):
         """Extend self log with another using the += operator."""
         self.log.extend(other.log)
         return self
+
+    def __str__(self):
+        text = ''
+        for entry in self.log:
+            text += self.template % (entry[DATE], entry[TIME], entry[MSG],
+                                     entry[LEVEL])
+        return text
 
     @staticmethod
     def _now():
@@ -114,12 +123,10 @@ class Logger(object):
                 return False
 
         # Save!
-        template = '%s' + self.separator + '%s' + self.separator + \
-                   '%s' + self.separator + '%s\n'
         not_written = 0
         for entry in source:
-            line = template % (entry[DATE], entry[TIME], entry[MSG],
-                               entry[LEVEL])
+            line = self.template % (entry[DATE], entry[TIME], entry[MSG],
+                                    entry[LEVEL])
             try:
                 fobject.write(line)
             except IOError:
