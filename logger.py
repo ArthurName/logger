@@ -23,8 +23,9 @@ DEBUG	= 'debug'
 # Indexes
 DATE = 0
 TIME = 1
-MSG = 2
-LEVEL = 3
+LEVEL = 2
+MSG = 3
+
 
 class Logger(object):
     """For logging of messages."""
@@ -46,37 +47,28 @@ class Logger(object):
     def __str__(self):
         text = ''
         for entry in self.log:
-            text += self.template % (entry[DATE], entry[TIME], entry[MSG],
-                                     entry[LEVEL])
+            text += self._to_string(entry)
         return text
-
-    @staticmethod
-    def _now():
-        return datetime.now().strftime('%Y-%m-%d;%H:%M:%S').split(';')
-
-    def _add(self, entry):
-        self.log.append(self._now() + entry)
-        self.save()
 
     def ok(self, msg):
         """Save a message in the log."""
-        self._add([msg, OK])
+        self._add([OK, msg])
 
     def info(self, msg):
         """Save a message in the log."""
-        self._add([msg, INFO])
+        self._add([INFO, msg])
 
     def warning(self, msg):
         """Save a message in the log."""
-        self._add([msg, WARNING])
+        self._add([WARNING, msg])
 
     def error(self, msg):
         """Save a message in the log."""
-        self._add([msg, ERROR])
+        self._add([ERROR, msg])
 
     def debug(self, msg):
         """Save a message in the log."""
-        self._add([msg, DEBUG])
+        self._add([DEBUG, msg])
 
     def clear(self):
         """Clear the log from all messages."""
@@ -125,8 +117,7 @@ class Logger(object):
         # Save!
         not_written = 0
         for entry in source:
-            line = self.template % (entry[DATE], entry[TIME], entry[MSG],
-                                    entry[LEVEL])
+            line = self._to_string(entry)
             try:
                 fobject.write(line)
             except IOError:
@@ -137,3 +128,29 @@ class Logger(object):
                           (not_written, len(source)))
                 return False
         return True
+
+    #
+    # Supporting methods.
+    #
+    @staticmethod
+    def _now():
+        """Fetch current date and time.
+
+        Returns:
+            Date and time:  As [yyyy-mm-dd, hh:mm:ss].
+        """
+        return datetime.now().strftime('%Y-%m-%d;%H:%M:%S').split(';')
+
+    def _add(self, entry):
+        """Add a log entry to the log. Log file is saved if autosave is on."""
+        self.log.append(self._now() + entry)
+        self.save()
+
+    def _to_string(self, entry):
+        """Build a text string from a log entry.
+
+        Returns:
+            Log entry (str).
+        """
+        return self.template % (entry[DATE], entry[TIME], entry[LEVEL],
+                                entry[MSG])
