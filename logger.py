@@ -1,24 +1,42 @@
 """A logger class.
 
+Note, probably you'd want to put a copy of this file in your personal user site
+directory (you can get the directory by running 'python -m site --user-site').
+That way you can always import it without messing with sys.path.
+
+Features:
+    * Logging to file is optional.
+    * Autosaving to file is optional.
+    * Easy to change or add log levels.
+    * Easy to add fields to log (beyond the message itself).
+
 Usage:
     import logger
-    log = logger.Logger()
+    log = logger.Logger("logfile.txt")
     log.ok("Something good happend.")
     log.info("Something happend.")
     log.warning("Something bad happend.")
     log.error("Something worse happend.")
     log.debug("Any kind of debugging message.")
+    log.save()
+
+For displaying the log, access member 'log' externally and print what you want
+in the order you want.
+
+A general suggestion is to have a 'log=logger.Logger()' argument for every
+relevant class constructor, and send an existing Logger object as argument
+to get the class to log to an already existing log higher up.
 """
 
 from datetime import datetime
 
 # Logging levels. These are in text format so that they can be used as CSS
 # class names immediately.
-OK		= 'ok'
-INFO	= 'neutral'
-WARNING	= 'warning'
-ERROR 	= 'error'
-DEBUG	= 'debug'
+OK = 'ok'
+INFO = 'info'
+WARNING = 'warning'
+ERROR = 'error'
+DEBUG = 'debug'
 
 # Indexes
 DATE = 0
@@ -45,6 +63,15 @@ class Logger(object):
         return self
 
     def __str__(self):
+        """String representation of current log contents.
+
+        The method exists for debugging purposes. For displaying the log,
+        instead access member 'log' externally and print what you want in the
+        order you want.
+
+        Returns:
+            Entire log contents (str).
+        """
         text = ''
         for entry in self.log:
             text += self._to_string(entry)
